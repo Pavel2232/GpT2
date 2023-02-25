@@ -5,5 +5,5 @@ services:
     image: pavel2232/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
     restart: always
     env_file:
-      - ../.env
+      - ./.env
     command: python main.py
