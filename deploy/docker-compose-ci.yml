@@ -7,3 +7,5 @@ services:
     env_file:
       - .env
     command: python main.py
+    ports:
+      - 80:80
