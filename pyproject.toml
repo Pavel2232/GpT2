@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "pythonproject6"
+version = "0.1.0"
+description = ""
+authors = ["Павел <king-he@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+aiogram = "^2.25.1"
+openai = "^0.26.5"
+environs = "^9.5.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
