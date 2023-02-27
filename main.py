@@ -91,9 +91,10 @@ async def stop(message: Message):
     # Сбрасываем состояние диалога
     await UserInput.waiting_for_message.set()
     async with bot.get_db() as db:
-    await db.delete(message.chat.id)
+        await db.delete(message.chat.id)
     await message.answer("Диалог завершен. Если хочешь начать заново, отправь мне сообщение.")
 
+# Создаем обработчик для остальных сообщений
 @dispatcher.message_handler(content_types=types.ContentTypes.ANY)
 async def unknown(message: Message):
     await message.answer("Извините, я не понимаю вас. Пожалуйста, используйте команду /start, чтобы начать диалог.")
