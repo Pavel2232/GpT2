@@ -29,11 +29,25 @@ class UserInput(StatesGroup):
     waiting_for_message = State()
 
 # Создаем функцию, которая будет генерировать ответ на сообщение пользователя
-async def generate_response(message:Message):
+async def generate_response(message: Message):
+    # Получаем ID чата и последний ответ пользователя
+    chat_id = message.chat.id
+    last_message = message.text
+
+    # Используем состояние для сохранения контекста диалога
+    async with bot.get_db() as db:
+        last_response = await db.get(chat_id)
+        
+    # Если уже был предыдущий ответ на сообщение пользователя, используем его как начальную точку
+    if last_response:
+        prompt = f"{last_message}{last_response}"
+    else:
+        prompt = last_message
+
     # Генерируем ответ с помощью модели Chat GPT
     response = openai.Completion.create(
         engine='text-davinci-003',
-        prompt=message.text,  #this my text question
+        prompt=prompt,
         max_tokens=2000,
         temperature=0.5,
         top_p=1,
@@ -44,6 +58,10 @@ async def generate_response(message:Message):
 
     # Обрабатываем ответ для улучшения его читаемости
     formatted_response = format_response(response.choices[0].text)
+
+    # Сохраняем ответ в базу данных для использования в следующем диалоге
+    async with bot.get_db() as db:
+        await db.set(chat_id, formatted_response)
 
     # Отправляем сгенерированный ответ пользователю
     await message.answer(md.text(formatted_response))
@@ -67,6 +85,18 @@ async def process_message(message: Message, state: FSMContext):
 
     # Ожидаем следующее сообщение от пользователя
     await UserInput.waiting_for_message.set()
+
+@dispatcher.message_handler(commands=['stop'])
+async def stop(message: Message):
+    # Сбрасываем состояние диалога
+    await UserInput.waiting_for_message.set()
+    async with bot.get_db() as db:
+    await db.delete(message.chat.id)
+    await message.answer("Диалог завершен. Если хочешь начать заново, отправь мне сообщение.")
+
+@dispatcher.message_handler(content_types=types.ContentTypes.ANY)
+async def unknown(message: Message):
+    await message.answer("Извините, я не понимаю вас. Пожалуйста, используйте команду /start, чтобы начать диалог.")
 
 # Функция для форматирования ответа Chat GPT
 def format_response(response):
