@@ -78,7 +78,6 @@ async def start(message:Message):
 @dispatcher.message_handler(state=UserInput.waiting_for_message, content_types=types.ContentTypes.TEXT)
 async def process_message(message: Message, state: FSMContext):
 
-    await bot.send_chat_action(message.chat.id, "typing")
 
     # Генерируем ответ на сообщение пользователя
     await generate_response(message)
